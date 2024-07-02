@@ -10,10 +10,11 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb+srv://dkf55:CbsUsDa6INXr1RWK@fustercluck.qsxdxw3.mongodb.net/?retryWrites=true&w=majority&appName=FusterCluck", {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  tls: true
+  tls: true,
+  tlsCAFile: './ca-certificate.crt'  // Optional, path to CA certificate if available
 });
 
 const itemsSchema = new mongoose.Schema({
@@ -101,15 +102,4 @@ app.post('/delete', function(req, res) {
   } else {
     List.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: checkedItemId } } })
       .then(() => res.redirect('/' + listName))
-      .catch(err => console.log(err));
-  }
-});
-
-app.get('/about', function(req, res) {
-  res.render('about');
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, function() {
-  console.log("Server started on port " + port);
-});
+      .catch(err =>
